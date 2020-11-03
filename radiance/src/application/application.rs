@@ -7,6 +7,9 @@ use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 use std::time::Instant;
 
+use winit::event::{Event, VirtualKeyCode, ElementState, KeyboardInput, WindowEvent};
+use winit::event_loop::{ControlFlow, EventLoopWindowTarget};
+
 pub trait ApplicationCallbacks {
     fn on_initialized<T: ApplicationCallbacks + ApplicationExtension<T>>(&mut self, _: &mut Application<T>);
     fn on_updated<T: ApplicationCallbacks + ApplicationExtension<T>>(&mut self, _: &mut Application<T>, _: f32);
@@ -77,7 +80,7 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
 
     #[cfg(target_os = "macos")]
     pub fn initialize(&mut self) {
-        Platform::run_event_loop(&self.platform.events_loop);
+        self.platform.events_loop.run(event_handler);
         ext_call!(self, on_initialized);
     }
 
@@ -111,6 +114,35 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
         }
 
         self.radiance_engine.unload_scene();
+    }
+}
+
+fn event_handler(event: Event<()>, _: &EventLoopWindowTarget<()>, control_flow: &mut ControlFlow) {
+    match event {
+        // Handler input event from keyboard
+        Event::WindowEvent { event, .. } => {
+            match event {
+                WindowEvent::CloseRequested => {
+                    *control_flow = ControlFlow::Exit        // Event: Close window
+                },
+
+                WindowEvent::KeyboardInput { input, .. } => {
+                    match input {
+                        KeyboardInput { virtual_keycode, state, .. } => {
+                            match (virtual_keycode, state) {
+                                | (Some(VirtualKeyCode::Escape), ElementState::Pressed) => {
+                                    dbg!();
+                                    *control_flow = ControlFlow::Exit
+                                },
+                                | _ => {},
+                            }
+                        },
+                    }
+                }
+                _ => {},
+            }
+        },
+        _ => {},
     }
 }
 
