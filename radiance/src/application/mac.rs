@@ -17,9 +17,9 @@ pub fn window_create(
         .expect("Err - Window creation failed: ")
 }
 
-pub struct Platform {
+pub struct Platform<'a> {
     pub window: winit::window::Window,
-    pub events_loop: EventLoop<()>,
+    pub events_loop: &'a EventLoop<()>,
 }
 
 pub const WINDOW_TITLE: &'static str = "Radiance";
