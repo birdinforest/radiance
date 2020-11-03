@@ -44,7 +44,7 @@ impl Platform {
 
         Self {
             window,
-            events_loop: &ev,
+            events_loop: ev,
         }
     }
 
