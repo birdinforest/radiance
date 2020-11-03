@@ -9,6 +9,7 @@ use std::time::Instant;
 
 use winit::event::{Event, VirtualKeyCode, ElementState, KeyboardInput, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoopWindowTarget};
+use winit::event_loop::{EventLoop};
 
 pub trait ApplicationCallbacks {
     fn on_initialized<T: ApplicationCallbacks + ApplicationExtension<T>>(&mut self, _: &mut Application<T>);
@@ -30,6 +31,7 @@ pub struct Application<TExtension: ApplicationExtension<TExtension>> {
     radiance_engine: CoreRadianceEngine,
     platform: Platform,
     extension: Rc<RefCell<TExtension>>,
+    events_loop: EventLoop<()>,
 }
 
 impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
@@ -52,7 +54,7 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
     #[cfg(target_os = "macos")]
     pub unsafe fn new(extension: TExtension) -> Self {
         set_panic_hook();
-        let platform = Platform::new();
+        let (platform , ev)= Platform::new();
         let window = rendering::Window {
             window: &platform.window,
         };
@@ -60,6 +62,7 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
             radiance_engine: radiance::create_radiance_engine(&window)
                 .expect(constants::STR_FAILED_CREATE_RENDERING_ENGINE),
             platform,
+            events_loop: ev,
             extension: Rc::new(RefCell::new(extension)),
         }
     }
@@ -84,8 +87,8 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
         ext_call!(self, on_initialized);
     }
 
-    pub fn run_event_loop(&self) {
-        self.platform.events_loop.run(event_handler);
+    pub fn run_event_loop(mut self) {
+        self.events_loop.run(event_handler);
     }
 
     #[cfg(target_os = "windows")]

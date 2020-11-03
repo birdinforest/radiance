@@ -19,7 +19,7 @@ pub fn window_create(
 
 pub struct Platform {
     pub window: winit::window::Window,
-    pub events_loop: EventLoop<()>,
+    // pub events_loop: EventLoop<()>,
 }
 
 pub const WINDOW_TITLE: &'static str = "Radiance";
@@ -34,7 +34,7 @@ impl Platform {
         }
     }
 
-    pub fn new() -> Self {
+    pub fn new() -> (Self, EventLoop<()>) {
         // Self::set_dpi_awareness();
         let ev = EventLoop::new();
         let window = window_create( WINDOW_TITLE, 800, 600, &ev);
@@ -42,10 +42,9 @@ impl Platform {
         //     Platform::show_error_dialog("Window Create", "Window create failed.");
         // }
 
-        Self {
+        (Self {
             window,
-            events_loop: ev,
-        }
+        }, ev)
     }
 
     pub fn event_handler(event: Event<()>, _: &EventLoopWindowTarget<()>, control_flow: &mut ControlFlow) {
@@ -77,7 +76,7 @@ impl Platform {
         }
     }
 
-    pub fn run_event_loop(events_loop: & EventLoop<()>) {
-        events_loop.run(Platform::event_handler);
-    }
+    // pub fn run_event_loop(events_loop: &mut EventLoop<()>) {
+    //     events_loop.run(Platform::event_handler);
+    // }
 }
