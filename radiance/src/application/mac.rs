@@ -1,6 +1,9 @@
 use winit::window::{Window, WindowBuilder};  // Used to create window.
 use winit::event_loop::{EventLoop};  // Used to create window.
 
+use winit::event::{Event, VirtualKeyCode, ElementState, KeyboardInput, WindowEvent};
+use winit::event_loop::{ControlFlow, EventLoopWindowTarget};
+
 pub fn window_create(
     title: &'static str,            // What is `&'static str` ??
     width: u32,
@@ -16,6 +19,7 @@ pub fn window_create(
 
 pub struct Platform {
     pub window: winit::window::Window,
+    pub events_loop: EventLoop<()>,
 }
 
 pub const WINDOW_TITLE: &'static str = "Radiance";
@@ -38,6 +42,42 @@ impl Platform {
         //     Platform::show_error_dialog("Window Create", "Window create failed.");
         // }
 
-        Self { window }
+        Self {
+            window,
+            events_loop: ev,
+        }
+    }
+
+    pub fn event_handler(event: Event<()>, _: &EventLoopWindowTarget<()>, control_flow: &mut ControlFlow) {
+        match event {
+            // Handler input event from keyboard
+            Event::WindowEvent { event, .. } => {
+                match event {
+                    WindowEvent::CloseRequested => {
+                        *control_flow = ControlFlow::Exit        // Event: Close window
+                    },
+
+                    WindowEvent::KeyboardInput { input, .. } => {
+                        match input {
+                            KeyboardInput { virtual_keycode, state, .. } => {
+                                match (virtual_keycode, state) {
+                                    | (Some(VirtualKeyCode::Escape), ElementState::Pressed) => {
+                                        dbg!();
+                                        *control_flow = ControlFlow::Exit
+                                    },
+                                    | _ => {},
+                                }
+                            },
+                        }
+                    }
+                    _ => {},
+                }
+            },
+            _ => {},
+        }
+    }
+
+    pub fn event_loop(mut self) {
+        self.events_loop.run(Platform::event_handler);
     }
 }
