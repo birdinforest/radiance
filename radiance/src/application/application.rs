@@ -75,6 +75,12 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
         ext_call!(self, on_initialized);
     }
 
+    #[cfg(target_os = "macos")]
+    pub fn initialize(&mut self) {
+        // self.platform.initialize();
+        ext_call!(self, on_initialized);
+    }
+
     #[cfg(target_os = "windows")]
     pub fn set_title(&mut self, title: &str) {
         self.platform.set_title(title);
