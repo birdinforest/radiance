@@ -21,11 +21,11 @@ mod private {
     pub struct EmptyCallbacks {}
     impl super::ApplicationExtension<EmptyCallbacks> for EmptyCallbacks {}
 }
-pub type DefaultApplication = Application<private::EmptyCallbacks>;
+pub type DefaultApplication<'a> = Application<'a, private::EmptyCallbacks>;
 
-pub struct Application<TExtension: ApplicationExtension<TExtension>> {
+pub struct Application<'a, TExtension: ApplicationExtension<TExtension>> {
     radiance_engine: CoreRadianceEngine,
-    platform: Platform,
+    platform: Platform<'a>,
     extension: Rc<RefCell<TExtension>>,
 }
 
