@@ -80,8 +80,12 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
 
     #[cfg(target_os = "macos")]
     pub fn initialize(&mut self) {
-        self.platform.events_loop.run(event_handler);
+        // self.platform.events_loop.run(event_handler);
         ext_call!(self, on_initialized);
+    }
+
+    pub fn run_event_loop(&self) {
+        self.platform.events_loop.run(event_handler);
     }
 
     #[cfg(target_os = "windows")]
