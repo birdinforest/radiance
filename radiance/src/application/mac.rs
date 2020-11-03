@@ -78,6 +78,6 @@ impl Platform {
     }
 
     pub fn event_loop(&mut self) {
-        self.events_loop.run(Platform::event_handler);
+        self.events_loop.as_ref().run(Platform::event_handler);
     }
 }
