@@ -91,13 +91,18 @@ impl RenderingEngine for VulkanRenderingEngine {
 }
 
 impl VulkanRenderingEngine {
-    pub fn new(window: &Window) -> Result<Self, Box<dyn std::error::Error>> {
+    pub unsafe fn new(window: &Window) -> Result<Self, Box<dyn std::error::Error>> {
         let entry = Entry::new().unwrap();
         let instance = Rc::new(creation_helpers::create_instance(&entry)?);
         let physical_device = creation_helpers::get_physical_device(&instance)?;
 
         let surface_entry = ash::extensions::khr::Surface::new(&entry, instance.as_ref());
-        let surface = creation_helpers::create_surface(&entry, &instance, &window)?;
+
+        #[cfg(target_os = "windows")]
+            let surface = creation_helpers::create_surface(&entry, &instance, window)?;
+
+        #[cfg(target_os = "macos")]
+        let surface = creation_helpers::create_surface(&entry, &instance, &window.window)?;
 
         let graphics_queue_family_index = creation_helpers::get_graphics_queue_family_index(
             &instance,

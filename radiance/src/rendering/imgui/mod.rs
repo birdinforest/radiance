@@ -3,6 +3,8 @@ pub mod vulkan;
 use imgui::*;
 use std::cell::RefCell;
 use std::time::Instant;
+
+#[cfg(target_os = "windows")]
 use winapi::um::winuser;
 
 pub struct ImguiContext {
@@ -43,6 +45,7 @@ impl ImguiContext {
         ImguiFrame { frame_begun: true }
     }
 
+    #[cfg(target_os = "windows")]
     fn init_platform(context: &mut Context, width: f32, height: f32) {
         context.set_platform_name(Some(ImString::from(format!(
             "radiance-imgui {}",
@@ -66,6 +69,25 @@ impl ImguiContext {
         io[Key::Space] = winuser::VK_SPACE as _;
         io[Key::Enter] = winuser::VK_RETURN as _;
         io[Key::Escape] = winuser::VK_ESCAPE as _;
+        io[Key::A] = 'A' as _;
+        io[Key::C] = 'C' as _;
+        io[Key::V] = 'V' as _;
+        io[Key::X] = 'X' as _;
+        io[Key::Y] = 'Y' as _;
+        io[Key::Z] = 'Z' as _;
+    }
+
+    #[cfg(target_os = "macos")]
+    fn init_platform(context: &mut Context, width: f32, height: f32) {
+        context.set_platform_name(Some(ImString::from(format!(
+            "radiance-imgui {}",
+            env!("CARGO_PKG_VERSION"),
+        ))));
+
+        let io = context.io_mut();
+        io.display_size = [width, height];
+        io.backend_flags.insert(BackendFlags::HAS_MOUSE_CURSORS);
+        io.backend_flags.insert(BackendFlags::HAS_SET_MOUSE_POS);
         io[Key::A] = 'A' as _;
         io[Key::C] = 'C' as _;
         io[Key::V] = 'V' as _;

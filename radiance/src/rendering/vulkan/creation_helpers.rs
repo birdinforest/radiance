@@ -15,6 +15,24 @@ use std::error::Error;
 use std::ffi::CString;
 use std::rc::Rc;
 
+// For MacOS
+#[cfg(target_os = "macos")]
+use ash::extensions::mvk::MacOSSurface;
+#[cfg(target_os = "macos")]
+use cocoa::appkit::{NSView, NSWindow};
+#[cfg(target_os = "macos")]
+use cocoa::base::id as cocoa_id;
+#[cfg(target_os = "macos")]
+use metal::CoreAnimationLayer;
+#[cfg(target_os = "macos")]
+use objc::runtime::YES;
+use winit::platform::macos::WindowExtMacOS;
+
+pub struct SurfaceStuff {
+    pub surface_loader: ash::extensions::khr::Surface,
+    pub surface: vk::SurfaceKHR,
+}
+
 pub fn create_instance(entry: &Entry) -> Result<Instance, InstanceError> {
     let app_info = vk::ApplicationInfo::builder()
         .engine_name(&CString::new(constants::STR_ENGINE_NAME).unwrap())
@@ -38,6 +56,7 @@ pub fn get_physical_device(instance: &Instance) -> Result<PhysicalDevice, Box<dy
     Ok(physical_devices[0])
 }
 
+#[cfg(target_os = "windows")]
 pub fn create_surface(
     entry: &Entry,
     instance: &Instance,
@@ -50,6 +69,42 @@ pub fn create_surface(
         .hwnd(window.hwnd as *const std::ffi::c_void)
         .build();
     unsafe { win32surface_entry.create_win32_surface(&create_info, None) }
+}
+
+#[cfg(target_os = "macos")]
+pub unsafe fn create_surface(
+    entry: &Entry,
+    instance: &Instance,
+    window: &winit::window::Window,
+) -> Result<vk::SurfaceKHR, vk::Result> {
+    use std::mem;
+    use std::os::raw::c_void;
+    use std::ptr;
+    use winit::platform::macos::WindowExtMacOS;
+
+    let wnd: cocoa_id = mem::transmute(window.ns_window());
+
+    let layer = CoreAnimationLayer::new();
+
+    layer.set_edge_antialiasing_mask(0);
+    layer.set_presents_with_transaction(false);
+    layer.remove_all_animations();
+
+    let view = wnd.contentView();
+
+    layer.set_contents_scale(view.backingScaleFactor());
+    view.setLayer(mem::transmute(layer.as_ref()));
+    view.setWantsLayer(YES);
+
+    let create_info = vk::MacOSSurfaceCreateInfoMVK {
+        s_type: vk::StructureType::MACOS_SURFACE_CREATE_INFO_M,
+        p_next: ptr::null(),
+        flags: Default::default(),
+        p_view: window.ns_view() as *const c_void,
+    };
+
+    let macos_surface_loader = MacOSSurface::new(entry, instance);
+    macos_surface_loader.create_mac_os_surface_mvk(&create_info, None)
 }
 
 pub fn get_graphics_queue_family_index(

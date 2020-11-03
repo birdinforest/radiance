@@ -7,4 +7,10 @@ mod windows;
 #[cfg(target_os = "windows")]
 pub use windows::Platform;
 
-pub use application::{Application, ApplicationExtension, DefaultApplication};
+#[cfg(target_os = "macos")]
+mod mac;
+
+#[cfg(target_os = "macos")]
+pub use mac::Platform;
+
+pub use application::{Application, ApplicationExtension, ApplicationCallbacks, DefaultApplication};

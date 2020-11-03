@@ -13,6 +13,16 @@ pub fn instance_extension_names() -> Vec<*const i8> {
     ]
 }
 
+#[cfg(target_os = "macos")]
+pub fn instance_extension_names() -> Vec<*const i8> {
+    vec![
+        ash::extensions::khr::Surface::name().as_ptr(),
+        ash::extensions::mvk::MacOSSurface::name().as_ptr(),
+        ash::extensions::ext::DebugUtils::name().as_ptr(),
+        ash::extensions::ext::DebugReport::name().as_ptr(),
+    ]
+}
+
 pub fn device_extension_names() -> Vec<*const i8> {
     vec![ash::extensions::khr::Swapchain::name().as_ptr()]
 }

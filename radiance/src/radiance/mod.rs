@@ -5,7 +5,7 @@ use crate::{audio::OpenAlAudioEngine, rendering::VulkanRenderingEngine};
 use std::error::Error;
 use std::rc::Rc;
 
-pub fn create_radiance_engine(
+pub unsafe fn create_radiance_engine(
     window: &crate::rendering::Window,
 ) -> Result<CoreRadianceEngine, Box<dyn Error>> {
     let rendering_engine = Box::new(VulkanRenderingEngine::new(window)?);

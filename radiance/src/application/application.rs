@@ -7,6 +7,11 @@ use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 use std::time::Instant;
 
+pub trait ApplicationCallbacks {
+    fn on_initialized<T: ApplicationCallbacks + ApplicationExtension<T>>(&mut self, _: &mut Application<T>);
+    fn on_updated<T: ApplicationCallbacks + ApplicationExtension<T>>(&mut self, _: &mut Application<T>, _: f32);
+}
+
 pub trait ApplicationExtension<TImpl: ApplicationExtension<TImpl>> {
     define_ext_fn!(on_initialized, Application, TImpl);
     define_ext_fn!(on_updating, Application, TImpl, _delta_sec: f32);
@@ -25,11 +30,28 @@ pub struct Application<TExtension: ApplicationExtension<TExtension>> {
 }
 
 impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
+    #[cfg(target_os = "windows")]
     pub fn new(extension: TExtension) -> Self {
         set_panic_hook();
         let platform = Platform::new();
+
         let window = rendering::Window {
             hwnd: platform.hwnd(),
+        };
+        Self {
+            radiance_engine: radiance::create_radiance_engine(&window)
+                .expect(constants::STR_FAILED_CREATE_RENDERING_ENGINE),
+            platform,
+            extension: Rc::new(RefCell::new(extension)),
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    pub unsafe fn new(extension: TExtension) -> Self {
+        set_panic_hook();
+        let platform = Platform::new();
+        let window = rendering::Window {
+            window: &platform.window,
         };
         Self {
             radiance_engine: radiance::create_radiance_engine(&window)
@@ -47,11 +69,13 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
         self.extension.borrow_mut()
     }
 
+    #[cfg(target_os = "windows")]
     pub fn initialize(&mut self) {
         self.platform.initialize();
         ext_call!(self, on_initialized);
     }
 
+    #[cfg(target_os = "windows")]
     pub fn set_title(&mut self, title: &str) {
         self.platform.set_title(title);
     }
@@ -60,6 +84,7 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
         let mut frame_start_time = Instant::now();
         let mut elapsed = 0.;
         loop {
+            #[cfg(target_os = "windows")]
             if !self.platform.process_message() {
                 break;
             }
