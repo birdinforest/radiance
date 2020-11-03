@@ -76,7 +76,7 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
     }
 
     #[cfg(target_os = "macos")]
-    pub fn initialize(&mut self) {
+    pub fn initialize(&self) {
         self.platform.event_loop();
         ext_call!(self, on_initialized);
     }
