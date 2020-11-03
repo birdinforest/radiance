@@ -77,7 +77,7 @@ impl Platform {
         }
     }
 
-    pub fn event_loop(&mut self) {
-        &(self.events_loop).run(Platform::event_handler);
+    pub fn run_event_loop(events_loop: & EventLoop<()>) {
+        events_loop.run(Platform::event_handler);
     }
 }
