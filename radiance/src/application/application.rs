@@ -62,6 +62,7 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
             radiance_engine: radiance::create_radiance_engine(&window)
                 .expect(constants::STR_FAILED_CREATE_RENDERING_ENGINE),
             platform,
+            // FIXME: Can only store events loop into app, as running it requires ownership. Should find a better solution.
             events_loop: ev,
             extension: Rc::new(RefCell::new(extension)),
         }
@@ -87,6 +88,7 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
         ext_call!(self, on_initialized);
     }
 
+    // FIXME: events loop.
     pub fn run_event_loop(mut self) {
         self.events_loop.run(event_handler);
     }
@@ -124,6 +126,7 @@ impl<TExtension: ApplicationExtension<TExtension>> Application<TExtension> {
     }
 }
 
+// FIXME: events loop.
 fn event_handler(event: Event<()>, _: &EventLoopWindowTarget<()>, control_flow: &mut ControlFlow) {
     match event {
         // Handler input event from keyboard
